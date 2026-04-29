@@ -9,7 +9,7 @@ const pumpSchema = new mongoose.Schema(
 		},
 		
 		owner: {
-			type: mongoose.Schema.Type.ObjectId,
+			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true,
 		},
@@ -52,7 +52,7 @@ const pumpSchema = new mongoose.Schema(
 					type: String,
 					enum: ['petrol', 'diesel', 'cng'],
 					required: true,
-				}
+				},
 				pricePerLitre: {
 					type: Number,
 					required: true,
@@ -133,7 +133,7 @@ const pumpSchema = new mongoose.Schema(
 	},
 	
 	{
-		timestamp: true,
+		timestamps: true,
 	}
 );
 

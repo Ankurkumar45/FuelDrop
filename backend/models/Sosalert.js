@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
-const sosAlertSchema = new mongoosse.Schema(
+const sosAlertSchema = new mongoose.Schema(
 	{
 		seeker: {
-			type: mongoose.Schema.Type.ObjectId,
+			type: mongoose.Schema.Types.ObjectId,
 			ref: 'User',
 			required: true,
 		},
@@ -40,7 +40,7 @@ const sosAlertSchema = new mongoosse.Schema(
 		notifiedPumps: [
 			{
 				pump: {
-					type: mongoose.Schema.Type.ObjectId,
+					type: mongoose.Schema.Types.ObjectId,
 					ref: 'Pump',
 				},
 				notifiedAt: {

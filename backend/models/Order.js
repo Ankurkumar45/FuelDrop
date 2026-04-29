@@ -134,4 +134,4 @@ orderSchema.index({
 	status: 1
 });
 
-module.exports = mongoose.module('Order', orderSchema);
+module.exports = mongoose.model('Order', orderSchema);
