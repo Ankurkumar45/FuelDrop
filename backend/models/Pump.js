@@ -48,7 +48,7 @@ const pumpSchema = new mongoose.Schema(
 		
 		fuelStock: [
 			{
-				fueltype: {
+				fuelType: {
 					type: String,
 					enum: ['petrol', 'diesel', 'cng'],
 					required: true,
@@ -121,7 +121,7 @@ const pumpSchema = new mongoose.Schema(
 			default: 0,
 		},
 		
-		isVarified: {
+		isVerified: {
 			type: Boolean,
 			default: false,
 		},

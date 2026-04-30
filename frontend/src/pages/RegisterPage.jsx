@@ -6,7 +6,6 @@ import { registerUser, clearError } from '../store/authSlice';
 const ROLES = [
     { value: 'seeker', label: 'Rider / Driver', icon: '🏍️', desc: 'Find pumps & order fuel' },
     { value: 'pump_owner', label: 'Pump Owner', icon: '⛽', desc: 'List your pump & take orders' },
-    { value: 'delivery_agent', label: 'Delivery Agent', icon: '🛵', desc: 'Deliver fuel to customers' },
 ];
 
 export default function RegisterPage() {
@@ -19,7 +18,6 @@ export default function RegisterPage() {
     });
     const [localError, setLocalError] = useState('');
 
-    // Redirect if already logged in
     useEffect(() => {
         if (user) navigate(getDashboardPath(user.role));
     }, [user, navigate]);
@@ -50,14 +48,12 @@ export default function RegisterPage() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
             <div className="bg-white rounded-2xl shadow-md w-full max-w-md p-8">
 
-                {/* Logo */}
                 <div className="text-center mb-6">
                     <span className="text-4xl">⛽</span>
                     <h1 className="text-2xl font-bold text-gray-900 mt-2">FuelDrop</h1>
                     <p className="text-gray-500 text-sm">Create your account</p>
                 </div>
 
-                {/* Role selector */}
                 <div className="grid grid-cols-3 gap-2 mb-6">
                     {ROLES.map((r) => (
                         <button
@@ -75,7 +71,6 @@ export default function RegisterPage() {
                     ))}
                 </div>
 
-                {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
@@ -146,7 +141,6 @@ export default function RegisterPage() {
                         />
                     </div>
 
-                    {/* Errors */}
                     {(error || localError) && (
                         <div className="bg-red-50 text-red-600 text-sm px-3 py-2 rounded-lg">
                             {localError || error}
@@ -173,6 +167,5 @@ export default function RegisterPage() {
 
 function getDashboardPath(role) {
     if (role === 'pump_owner') return '/pump-dashboard';
-    if (role === 'delivery_agent') return '/agent-dashboard';
     return '/home';
 }
