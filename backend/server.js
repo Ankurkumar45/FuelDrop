@@ -7,6 +7,7 @@ const connectDB = require('./config/db');
 
 const authRoute = require('./routes/authRoutes');
 const pumpRoute = require('./routes/pumpRoutes');
+const orderRoute = require('./routes/orderRoutes');
 
 dotenv.config();
 connectDB()
@@ -34,6 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/auth', authRoute);
 app.use('/api/pumps', pumpRoute);
+app.use('/api/orders', orderRoute);
 
 //404 handler
 app.get('/api/health', (req, res) => {
