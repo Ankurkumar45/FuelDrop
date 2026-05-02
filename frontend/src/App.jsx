@@ -8,6 +8,9 @@ import RegisterPage from './pages/RegisterPage';
 import SeekerHome from './pages/SeekerHome';
 import PumpDashboard from './pages/PumpDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import OrderTracking from './pages/OrderTracking';
+import AgentDashboard from './pages/AgentDashboard';
+import PumpOrders from './components/PumpOrders';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -33,6 +36,24 @@ export default function App() {
           <ProtectedRoute role="pump_owner">
             <PumpDashboard />
           </ProtectedRoute>
+        } />
+
+        <Route path="/order-tracking" element={
+          <ProtectedRoute role="seeker">
+            <OrderTracking />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/agent-dashboard" element={
+          <ProtectedRoute role="delivery_agent">
+            <AgentDashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/pump-orders" element={
+          <ProtectedRoute role="pump_owner">
+            <PumpOrders />
+            </ProtectedRoute>
         } />
 
         <Route path="/" element={<Navigate to="/login" replace />} />
