@@ -5,7 +5,10 @@ import { logout } from '../store/authSlice';
 import { useNavigate } from 'react-router-dom';
 import MapView from '../components/MapView';
 import PumpCard from '../components/PumpCard';
+import OrderModal from '../components/OrderModal';
+import SosModal from '../components/SosModal';
 import useGeolocation from '../hooks/useGeolocation';
+import useSocket from '../hooks/useSocket';
 
 const FUEL_FILTERS = ['all', 'petrol', 'diesel', 'cng'];
 
@@ -14,11 +17,17 @@ export default function SeekerHome() {
     const navigate = useNavigate();
     const { user } = useSelector((s) => s.auth);
     const { nearbyPumps, selectedPump, loading, error } = useSelector((s) => s.pump);
+	const { myOrders } = useSelector((s) => s.order);
+	const { activeSos } = useSelector((s) => s.sos);
 
     const { location, error: geoError, loading: geoLoading } = useGeolocation();
-    const [fuelFilter, setFuelFilter] = useState('all');
+    useSocket();
+	
+	const [fuelFilter, setFuelFilter] = useState('all');
     const [radius, setRadius] = useState(10);
     const [showList, setShowList] = useState(true);
+	const [orderPump, setOrderPump] = useState(null);
+	const [showSos, setShowSos] = useState(false);
 
     useEffect(() => {
         if (location) {
@@ -31,6 +40,10 @@ export default function SeekerHome() {
             }));
         }
     }, [location, fuelFilter, radius]);
+	
+	const activeOrderCount = myOrders.filter((o) => 
+			['pending', 'accepted', 'assigned', 'en_route'].includes(o.status)
+		).length;
 
     const handleOrderClick = (pump) => {
         alert(`Order flow coming in Phase 3!\nPump: ${pump.name}`);
@@ -44,6 +57,19 @@ export default function SeekerHome() {
                 <div className="flex items-center gap-2">
                     <span className="text-xl">⛽</span>
                     <span className="font-bold text-gray-800">FuelDrop</span>
+                </div>
+				<div className="flex items-center gap-3">
+                    <button onClick={() => navigate('/my-orders')} className="relative text-sm text-gray-600 font-medium">
+						Orders
+						{activeOrderCount > 0 && (
+							<span className="absolute -top-1 -right-2 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+								{activeOrderCount}
+							</span>
+						)}
+					</button>
+					<span className="text-sm text-gray-400">
+						{user?.name?.split(' ')[0]}
+					</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <span className="text-sm text-gray-500">Hi, {user?.name?.split(' ')[0]}</span>
@@ -146,8 +172,10 @@ export default function SeekerHome() {
                         {/* SOS button */}
                         <div className="px-4 mb-3">
                             <button
-                                onClick={() => alert('🆘 SOS feature coming in Phase 4!')}
-                                className="w-full bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"
+                                onClick={() => setShowSos(true)}
+                                className={`w-full text-white text-sm font-semibold py-3 rounded-xl flex items-center justify-center gap-2 transition-all $ {
+									activeSos?.status === 'active' ? 'bg-red-600 animate-pulse' : 'bg-red-500 hover:bg-red-600'
+								}`}
                             >
                                 🆘 Emergency SOS — I need fuel now!
                             </button>
@@ -174,7 +202,7 @@ export default function SeekerHome() {
                                 <PumpCard
                                     key={pump._id}
                                     pump={pump}
-                                    onOrderClick={handleOrderClick}
+                                    onOrderClick={(p) => setOrderPump(p)}
                                 />
                             ))}
                         </div>
@@ -191,6 +219,20 @@ export default function SeekerHome() {
                     </button>
                 )}
             </div>
+			
+			{orderPump && (
+				<OrderModal pump={orderPump} userLocation={location}
+					onClose={() => setOrderPump(null)}
+					onSuccess={() => {
+						setOrderPump(null);
+						navigate('/my-orders');
+					}}
+				/>
+			)}
+			
+			{showSos && (
+				<SosModal userLocation={location} onClose={() => setShowSos(false)} />
+			)}
         </div>
     );
 }
