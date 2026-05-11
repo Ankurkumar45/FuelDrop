@@ -11,6 +11,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import OrderTracking from './pages/OrderTracking';
 import AgentDashboard from './pages/AgentDashboard';
 import PumpOrders from './components/PumpOrders';
+import SosPage from './pages/SosPage';
+import OrderCreation from './pages/OrderCreation';
 
 export default function App() {
   const dispatch = useDispatch();
@@ -41,6 +43,18 @@ export default function App() {
         <Route path="/order-tracking" element={
           <ProtectedRoute role="seeker">
             <OrderTracking />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/order-create" element={
+          <ProtectedRoute role="seeker">
+            <OrderCreation />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/sos" element={
+          <ProtectedRoute role="seeker">
+            <SosPage />
           </ProtectedRoute>
         } />
 

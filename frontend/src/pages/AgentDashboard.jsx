@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { fetchMyOrders, setActiveOrder, cancelOrder, submitReview } from '../store/orderSlice';
-import { useState } from 'react';
+import { fetchAgentOrders } from '../store/orderSlice';
 
 const STATUS_STEPS = ['pending', 'accepted', 'assigned', 'en_route', 'delivered'];
 
@@ -45,64 +44,23 @@ function ProgressBar({ status }) {
     );
 }
 
-function ReviewForm({ orderId, onDone }) {
-    const dispatch = useDispatch();
-    const [rating, setRating] = useState(5);
-    const [comment, setComment] = useState('');
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        await dispatch(submitReview({ id: orderId, rating, comment }));
-        onDone();
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="bg-yellow-50 rounded-xl p-4 mt-3 space-y-3">
-            <p className="text-sm font-semibold text-gray-800">Rate your delivery</p>
-            <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                    <button key={star} type="button" onClick={() => setRating(star)}
-                        className={`text-2xl transition-transform hover:scale-110 ${star <= rating ? 'opacity-100' : 'opacity-30'}`}>
-                        ⭐
-                    </button>
-                ))}
-            </div>
-            <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2}
-                placeholder="Tell others about your experience..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400" />
-            <button type="submit" className="w-full bg-orange-500 text-white py-2 rounded-lg text-sm font-medium">
-                Submit review
-            </button>
-        </form>
-    );
-}
-
-export default function OrderTracking() {
+export default function AgentDashboard() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { myOrders, activeOrder, agentLocation, loading } = useSelector((s) => s.order);
-    const [showReview, setShowReview] = useState(false);
-    const [cancellingId, setCancellingId] = useState(null);
+    const { agentOrders, agentLocation, loading } = useSelector((s) => s.order);
 
     useEffect(() => {
-        dispatch(fetchMyOrders());
-    }, []);
+        dispatch(fetchAgentOrders());
+    }, [dispatch]);
 
-    const handleCancel = async (orderId) => {
-        if (!window.confirm('Cancel this order?')) return;
-        setCancellingId(orderId);
-        await dispatch(cancelOrder({ id: orderId, reason: 'Cancelled by customer' }));
-        setCancellingId(null);
-    };
-
-    const orders = myOrders;
+    const orders = agentOrders;
 
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Navbar */}
             <div className="bg-white shadow-sm px-4 py-3 flex items-center gap-3">
-                <button onClick={() => navigate('/home')} className="text-gray-400 hover:text-gray-600 text-xl">←</button>
-                <h1 className="font-bold text-gray-900">My Orders</h1>
+                <button onClick={() => navigate('/agent-dashboard')} className="text-gray-400 hover:text-gray-600 text-xl">←</button>
+                <h1 className="font-bold text-gray-900">Assigned Orders</h1>
             </div>
 
             <div className="max-w-xl mx-auto px-4 py-5 space-y-4">
@@ -116,10 +74,10 @@ export default function OrderTracking() {
                 {!loading && orders.length === 0 && (
                     <div className="text-center py-16">
                         <div className="text-4xl mb-3">📭</div>
-                        <p className="text-gray-600 font-medium">No orders yet</p>
-                        <p className="text-gray-400 text-sm mt-1">Find a pump and place your first order</p>
-                        <button onClick={() => navigate('/home')} className="mt-4 bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-medium">
-                            Find pumps
+                        <p className="text-gray-600 font-medium">No assigned orders yet</p>
+                        <p className="text-gray-400 text-sm mt-1">New assignments will appear here in real time</p>
+                        <button onClick={() => navigate('/agent-dashboard')} className="mt-4 bg-orange-500 text-white px-5 py-2 rounded-lg text-sm font-medium">
+                            Refresh
                         </button>
                     </div>
                 )}
@@ -176,37 +134,7 @@ export default function OrderTracking() {
                             </span>
                         </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-2 mt-3">
-                            {/* Cancel button */}
-                            {['pending', 'accepted'].includes(order.status) && (
-                                <button
-                                    onClick={() => handleCancel(order._id)}
-                                    disabled={cancellingId === order._id}
-                                    className="flex-1 border border-red-200 text-red-500 text-xs py-2 rounded-lg hover:bg-red-50 disabled:opacity-60"
-                                >
-                                    {cancellingId === order._id ? 'Cancelling...' : 'Cancel order'}
-                                </button>
-                            )}
-
-                            {/* Review button */}
-                            {order.status === 'delivered' && !order.review?.rating && (
-                                <button
-                                    onClick={() => setShowReview(order._id)}
-                                    className="flex-1 border border-orange-200 text-orange-500 text-xs py-2 rounded-lg hover:bg-orange-50"
-                                >
-                                    ⭐ Rate delivery
-                                </button>
-                            )}
-                            {order.review?.rating && (
-                                <span className="text-xs text-gray-400 py-2">{'⭐'.repeat(order.review.rating)} You rated this delivery</span>
-                            )}
-                        </div>
-
-                        {/* Inline review form */}
-                        {showReview === order._id && (
-                            <ReviewForm orderId={order._id} onDone={() => setShowReview(null)} />
-                        )}
+                        {/* Agent view is read-only for now */}
                     </div>
                 ))}
             </div>

@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { io } from 'socket.io-client';
 import { socketOrderUpdate, setAgentLocation } from '../store/orderSlice';
+import { socketSosNew, socketSosRemove, socketSosAccepted, socketSosNoResponse } from '../store/sosSlice';
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000';
 
@@ -40,12 +41,23 @@ export default function useSocket() {
         socketInstance.on('agent:locationUpdate', ({ lat, lng }) => {
             dispatch(setAgentLocation({ lat, lng }));
         });
-
+		
+		socketInstance.on('sos:new', (payload) => dispatch(socketSosNew(payload)));
+		socketInstance.on('sos:resolve', (payload) => dispatch(socketSosRemove(payload)));
+		socketInstance.on('sos:cancelled', (payload) => dispatch(socketSosRemove(payload)));
+		socketInstance.on('sos:accepted', (payload) => dispatch(socketSosAccepted(payload)));
+		socketInstance.on('sos:noResponse', (payload) => dispatch(socketSosNoResponse(payload)));
         return () => {
             socketInstance?.off('order:new');
             socketInstance?.off('order:statusUpdate');
             socketInstance?.off('order:cancelled');
             socketInstance?.off('agent:locationUpdate');
+			
+			socketInstance?.off('sos:new');
+			socketInstance?.off('sos:resolve');
+			socketInstance?.off('sos:cancelled');
+			socketInstance?.off('sos:accepted');
+			socketInstance?.off('sos:noResponse');
         };
     }, [token, user?._id]);
 

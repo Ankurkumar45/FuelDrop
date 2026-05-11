@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { registerUser, clearError } from '../store/authSlice';
+import logo from '../assets/logo.png';
 
 const ROLES = [
     { value: 'seeker', label: 'Rider / Driver', icon: '🏍️', desc: 'Find pumps & order fuel' },
@@ -49,8 +50,8 @@ export default function RegisterPage() {
             <div className="bg-white rounded-2xl shadow-md w-full max-w-md p-8">
 
                 <div className="text-center mb-6">
-                    <span className="text-4xl">⛽</span>
-                    <h1 className="text-2xl font-bold text-gray-900 mt-2">FuelDrop</h1>
+                    <img src={logo} alt="FuelDrop logo" className="mx-auto h-16 w-auto" />
+                    <h1 className="text-2xl font-bold text-gray-900 mt-4">FuelDrop</h1>
                     <p className="text-gray-500 text-sm">Create your account</p>
                 </div>
 
@@ -79,7 +80,7 @@ export default function RegisterPage() {
                             value={form.name}
                             onChange={handleChange}
                             required
-                            placeholder="Rahul Kumar"
+                            placeholder="Ankur Kumar"
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                         />
                     </div>
@@ -92,7 +93,7 @@ export default function RegisterPage() {
                             value={form.email}
                             onChange={handleChange}
                             required
-                            placeholder="rahul@example.com"
+                            placeholder="ankur@example.com"
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                         />
                     </div>
@@ -108,7 +109,7 @@ export default function RegisterPage() {
                                 onChange={handleChange}
                                 required
                                 maxLength={10}
-                                placeholder="9876543210"
+                                placeholder=""
                                 className="flex-1 border border-gray-300 rounded-r-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                             />
                         </div>

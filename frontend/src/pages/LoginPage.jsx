@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { loginUser, clearError } from '../store/authSlice';
+import logo from '../assets/logo.png';
 
 export default function LoginPage() {
     const dispatch = useDispatch();
@@ -34,8 +35,8 @@ export default function LoginPage() {
 
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <span className="text-4xl">⛽</span>
-                    <h1 className="text-2xl font-bold text-gray-900 mt-2">FuelDrop</h1>
+                    <img src={logo} alt="FuelDrop logo" className="mx-auto h-16 w-auto" />
+                    <h1 className="text-2xl font-bold text-gray-900 mt-4">FuelDrop</h1>
                     <p className="text-gray-500 text-sm">Sign in to your account</p>
                 </div>
 
@@ -49,7 +50,7 @@ export default function LoginPage() {
                             onChange={handleChange}
                             required
                             autoComplete="email"
-                            placeholder="rahul@example.com"
+                            placeholder="ankur@example.com"
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                         />
                     </div>

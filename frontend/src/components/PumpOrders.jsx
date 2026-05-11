@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPumpOrders, updateStatus } from '../store/orderSlice';
+import useSocket from '../hooks/useSocket';
 
 const STATUS_COLORS = {
     pending: 'bg-yellow-100 text-yellow-700',
@@ -12,9 +13,25 @@ const STATUS_COLORS = {
     rejected: 'bg-red-100 text-red-600',
 };
 
+const formatDeliveryAddress = (deliveryAddress) => {
+    if (!deliveryAddress) return 'Address not provided';
+    if (typeof deliveryAddress === 'string') return deliveryAddress;
+    if (typeof deliveryAddress === 'object') {
+        const parts = [
+            deliveryAddress.street,
+            deliveryAddress.city,
+            deliveryAddress.state,
+            deliveryAddress.pincode,
+        ].filter(Boolean);
+        return parts.length ? parts.join(', ') : 'Address not provided';
+    }
+    return String(deliveryAddress);
+};
+
 export default function PumpOrders() {
     const dispatch = useDispatch();
     const { pumpOrders, loading } = useSelector((s) => s.order);
+    useSocket();
     const [filter, setFilter] = useState('pending');
     const [processingId, setProcessingId] = useState(null);
 
@@ -78,7 +95,7 @@ export default function PumpOrders() {
                         {/* Order details */}
                         <div className="space-y-1 mb-3 text-xs text-gray-500">
                             <p>⛽ {order.quantityLitres}L {order.fuelType} · ₹{order.totalAmount}</p>
-                            <p>📍 {order.deliveryAddress}</p>
+                            <p>📍 {formatDeliveryAddress(order.deliveryAddress)}</p>
                             <p>💳 {order.paymentMethod === 'cod' ? 'Cash on delivery' : 'Online payment'}</p>
                             {order.specialInstructions && <p>📝 {order.specialInstructions}</p>}
                             <p className="text-gray-300">#{order._id.slice(-6).toUpperCase()}</p>

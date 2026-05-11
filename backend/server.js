@@ -8,9 +8,11 @@ const connectDB = require('./config/db');
 const authRoute = require('./routes/authRoutes');
 const pumpRoute = require('./routes/pumpRoutes');
 const orderRoute = require('./routes/orderRoutes');
+const sosRoute = require('./routes/sosRoutes');
+const paymentRoute = require('./routes/paymentRoutes');
 
 dotenv.config();
-connectDB()
+connectDB();
 
 
 const app = express();
@@ -36,13 +38,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoute);
 app.use('/api/pumps', pumpRoute);
 app.use('/api/orders', orderRoute);
+app.use('/api/sos', sosRoute);
+app.use('/api/payments', paymentRoute);
 
-//404 handler
+// Health check endpoint
 app.get('/api/health', (req, res) => {
 	res.json({
 		success: true,
 		message: 'FuelDrop API is running',
 		timestamp: new Date().toISOString(),
+	});
+});
+
+// 404 handler
+app.use((req, res) => {
+	res.status(404).json({
+		success: false,
+		message: `Route ${req.originalUrl} not found`
 	});
 });
 
@@ -74,31 +86,17 @@ app.use((err, req, res, next) => {
 	});
 });
 
-app.use((req, res) => {
-	res.status(404).json({
-		success: false,
-		message: `Route ${req.originalUrl} not found`
-	});
-});
-
 //Socket.IO connection handler
 io.on('connection', (socket) => {
 	console.log(`Socket connected: ${socket.id}`);
 	
 	socket.on('join', (userId) => {
 		socket.join(userId);
-		console.lo(`User ${userId} joined room`);
+		console.log(`User ${userId} joined room`);
 	});
 	
 	socket.on('disconnect', () => {
 		console.log(`Socket disconnected: ${socket.id}`);
-	});
-});
-
-app.use((req, res) => {
-	res.status(404).json({
-		success: false,
-		message: `Route ${req.originalUrl} not found`,
 	});
 });
 

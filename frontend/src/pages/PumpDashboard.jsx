@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchMyPump, createPump, updatePumpStock } from '../store/pumpSlice';
+import SosInbox from '../components/SosInbox';
+import PumpOrders from '../components/PumpOrders';
 import { logout } from '../store/authSlice';
 import { useNavigate } from 'react-router-dom';
+import useSocket from '../hooks/useSocket';
+import logo from '../assets/logo.png';
 
 const INITIAL_FORM = {
     name: '',
@@ -25,10 +29,12 @@ export default function PumpDashboard() {
     const navigate = useNavigate();
     const { user } = useSelector((s) => s.auth);
     const { myPump, loading, error } = useSelector((s) => s.pump);
+    useSocket();
 
     const [tab, setTab] = useState('overview');
     const [form, setForm] = useState(INITIAL_FORM);
     const [stockEdit, setStockEdit] = useState(false);
+    const [editableStock, setEditableStock] = useState([]);
     const [locLoading, setLocLoading] = useState(false);
 
     useEffect(() => {
@@ -38,6 +44,10 @@ export default function PumpDashboard() {
     // Auto-fill form if pump already exists (for editing later)
     useEffect(() => {
         if (myPump) setTab('overview');
+    }, [myPump]);
+
+    useEffect(() => {
+        setEditableStock(myPump?.fuelStock || []);
     }, [myPump]);
 
     // ── Get current location for the registration form ────────────────────────
@@ -95,9 +105,18 @@ export default function PumpDashboard() {
     // ── Update stock submit ───────────────────────────────────────────────────
     const handleStockUpdate = async () => {
         if (!myPump) return;
-        await dispatch(updatePumpStock({ id: myPump._id, fuelStock: myPump.fuelStock }));
-        setStockEdit(false);
-        alert('✅ Stock updated!');
+        const payload = editableStock.map((fuel) => ({
+            ...fuel,
+            pricePerLitre: Number(fuel.pricePerLitre) || 0,
+            availableLitres: Number(fuel.availableLitres) || 0,
+        }));
+        const result = await dispatch(updatePumpStock({ id: myPump._id, fuelStock: payload }));
+        if (updatePumpStock.fulfilled.match(result)) {
+            setStockEdit(false);
+            alert('✅ Stock updated!');
+            return;
+        }
+        alert(result.payload || 'Failed to update stock');
     };
 
     return (
@@ -106,7 +125,7 @@ export default function PumpDashboard() {
             {/* Navbar */}
             <div className="bg-white shadow-sm px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <span className="text-xl">⛽</span>
+                    <img src={logo} alt="FuelDrop logo" className="h-8 w-auto" />
                     <span className="font-bold text-gray-800">FuelDrop</span>
                     <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full ml-1">Pump Owner</span>
                 </div>
@@ -196,9 +215,13 @@ export default function PumpDashboard() {
                                     </div>
                                 </div>
 
-                                {/* Orders placeholder */}
-                                <div className="bg-white rounded-xl p-5 shadow-sm text-center">
-                                    <p className="text-gray-400 text-sm">📦 Order management coming in Phase 3</p>
+                                {/* Live order notifications for pump owner */}
+                                <div className="bg-white rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="font-semibold text-gray-800 text-sm">Order notifications</h3>
+                                        <span className="text-xs text-gray-400">Live</span>
+                                    </div>
+                                    <PumpOrders />
                                 </div>
                             </div>
                         )}
@@ -213,16 +236,16 @@ export default function PumpDashboard() {
                             <h3 className="font-semibold text-gray-800">Pump details</h3>
                             <div>
                                 <label className="text-xs text-gray-500">Pump name</label>
-                                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="e.g. Sharma Petrol Pump" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                                <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required placeholder="e.g. Dwivedi Petrol Pump" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <label className="text-xs text-gray-500">Street</label>
-                                    <input value={form.address.street} onChange={(e) => setForm({ ...form, address: { ...form.address, street: e.target.value } })} required placeholder="NH-30, near bus stand" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                                    <input value={form.address.street} onChange={(e) => setForm({ ...form, address: { ...form.address, street: e.target.value } })} required placeholder="near middle school" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500">City</label>
-                                    <input value={form.address.city} onChange={(e) => setForm({ ...form, address: { ...form.address, city: e.target.value } })} required placeholder="Patna" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                                    <input value={form.address.city} onChange={(e) => setForm({ ...form, address: { ...form.address, city: e.target.value } })} required placeholder="Gopalganj" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500">State</label>
@@ -230,7 +253,7 @@ export default function PumpDashboard() {
                                 </div>
                                 <div>
                                     <label className="text-xs text-gray-500">Pincode</label>
-                                    <input value={form.address.pincode} onChange={(e) => setForm({ ...form, address: { ...form.address, pincode: e.target.value } })} required placeholder="800001" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                                    <input value={form.address.pincode} onChange={(e) => setForm({ ...form, address: { ...form.address, pincode: e.target.value } })} required placeholder="841428" className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                                 </div>
                             </div>
                         </div>
@@ -312,15 +335,15 @@ export default function PumpDashboard() {
                 {tab === 'stock' && myPump && (
                     <div className="bg-white rounded-xl p-5 shadow-sm space-y-4">
                         <h3 className="font-semibold text-gray-800">Update fuel stock & prices</h3>
-                        {myPump.fuelStock?.map((f, i) => (
+                        {editableStock?.map((f, i) => (
                             <div key={f.fuelType} className="border rounded-lg p-4 space-y-2">
                                 <div className="flex justify-between items-center">
                                     <span className="font-medium capitalize text-gray-700">{f.fuelType}</span>
                                     <label className="flex items-center gap-1.5 text-xs">
                                         <input type="checkbox" checked={f.isAvailable} onChange={(e) => {
-                                            const updated = [...myPump.fuelStock];
+                                            const updated = [...editableStock];
                                             updated[i] = { ...updated[i], isAvailable: e.target.checked };
-                                            dispatch({ type: 'pump/updateLocalStock', payload: updated });
+                                            setEditableStock(updated);
                                         }} className="accent-orange-500" />
                                         Available
                                     </label>
@@ -328,16 +351,21 @@ export default function PumpDashboard() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
                                         <label className="text-xs text-gray-500">Price per litre (₹)</label>
-                                        <input type="number" defaultValue={f.pricePerLitre} onChange={(e) => {
-                                            const updated = myPump.fuelStock.map((item, idx) =>
-                                                idx === i ? { ...item, pricePerLitre: parseFloat(e.target.value) } : item
+                                        <input type="number" value={f.pricePerLitre} onChange={(e) => {
+                                            const updated = editableStock.map((item, idx) =>
+                                                idx === i ? { ...item, pricePerLitre: e.target.value } : item
                                             );
-                                            // handled on submit
+                                            setEditableStock(updated);
                                         }} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                                     </div>
                                     <div>
                                         <label className="text-xs text-gray-500">Available litres</label>
-                                        <input type="number" defaultValue={f.availableLitres} onChange={(e) => { }} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                                        <input type="number" value={f.availableLitres} onChange={(e) => {
+                                            const updated = editableStock.map((item, idx) =>
+                                                idx === i ? { ...item, availableLitres: e.target.value } : item
+                                            );
+                                            setEditableStock(updated);
+                                        }} className="mt-1 w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
                                     </div>
                                 </div>
                             </div>

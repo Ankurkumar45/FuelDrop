@@ -61,12 +61,20 @@ export const orderService = {
     addReview: (id, data) => API.put(`/orders/${id}/review`, data),
 };
 
+// ─── Payment endpoints ─────────────────────────────────────────────────────
+export const paymentService = {
+    createOrder: (orderId) => API.post(`/payments/create-order/${orderId}`),
+    verifyPayment: (orderId, data) => API.post(`/payments/verify-payment/${orderId}`, data),
+};
+
 // ─── SOS endpoints (Phase 4) ───────────────────────────────────────────────
 export const sosService = {
     create: (data) => API.post('/sos', data),
-    getActive: () => API.get('/sos/active'),
+	getMySos: () => API.get('/sos/my-sos'),
+	getIncoming: () => API.get('/sos/incoming'),
+    //getActive: () => API.get('/sos/active'),
     respond: (id, data) => API.put(`/sos/${id}/respond`, data),
-    cancel: (id) => API.put(`/sos/${id}/cancel`),
+    cancel: (id) => API.get(`/sos/${id}/cancel`),
 };
 
 export default API;

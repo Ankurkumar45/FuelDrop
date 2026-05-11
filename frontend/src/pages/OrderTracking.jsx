@@ -16,6 +16,17 @@ const STATUS_LABELS = {
     rejected: { label: 'Order rejected', icon: '🚫', color: 'text-red-500' },
 };
 
+function formatDeliveryAddress(address) {
+    if (!address) return 'Address unavailable';
+    if (typeof address === 'string') return address;
+    if (typeof address === 'object') {
+        return [address.street, address.city, address.state, address.pincode]
+            .filter(Boolean)
+            .join(', ');
+    }
+    return String(address);
+}
+
 function StatusBadge({ status }) {
     const s = STATUS_LABELS[status] || {};
     return (
@@ -166,11 +177,11 @@ export default function OrderTracking() {
                         )}
 
                         {/* Delivery address */}
-                        <p className="text-xs text-gray-400 mb-3">📍 {order.deliveryAddress}</p>
+                        <p className="text-xs text-gray-400 mb-3">📍 {formatDeliveryAddress(order.deliveryAddress)}</p>
 
                         {/* Payment info */}
                         <div className="flex justify-between text-xs text-gray-500 border-t pt-3">
-                            <span>{order.paymentMethod === 'cod' ? '💵 Cash on delivery' : '📱 Online payment'}</span>
+                            <span>{order.paymentMethod === 'cash' ? '💵 Cash on delivery' : '📱 Online payment'}</span>
                             <span className={order.paymentStatus === 'paid' ? 'text-green-500 font-medium' : ''}>
                                 {order.paymentStatus === 'paid' ? '✅ Paid' : `₹${order.totalAmount} due`}
                             </span>
