@@ -1,4 +1,4 @@
-const SosAlert = require('../models/SosAlert');
+const Sosalert = require('../models/Sosalert');
 const Pump = require('../models/Pump');
 const Order = require('../models/Order');
 
@@ -6,7 +6,7 @@ exports.createSos = async (req, res) => {
 	try {
 		const { latitude, longitude, fuelType, quantityNeeded, locationDescription } = req.body;
 		
-		await SosAlert.updateMany(
+		await Sosalert.updateMany(
 			{ seeker: req.user.id, status: 'active' },
 			{ status: 'cancelled' }
 		);
@@ -35,7 +35,7 @@ exports.createSos = async (req, res) => {
 			},
 		}).select('_id owner name').limit(15);
 		
-		const sos = await SosAlert.create({
+		const sos = await Sosalert.create({
 			seeker: req.user.id,
 			location: {
 				type: 'Point',
@@ -82,7 +82,7 @@ exports.createSos = async (req, res) => {
 
 exports.getMySos = async (req, res) => {
 	try {
-		const alerts = await SosAlert.find({ seeker: req.user._id })
+		const alerts = await Sosalert.find({ seeker: req.user._id })
 			.populate('respondingPump', 'name address')
 			.populate('convertedToOrder')
 			.sort({ createdAt: -1 })
@@ -109,7 +109,7 @@ exports.getIncomingSos = async (req, res) => {
 			message: 'No pump found'
 		});
 		
-		const alerts = await SosAlert.find({
+		const alerts = await Sosalert.find({
 			status: 'active',
 			'notifiedPumps.pump': pump._id,
 		})
@@ -138,7 +138,7 @@ exports.respondToSos = async (req, res) => {
 			message: 'No pump found'
 		});
 		
-		const sos = await SosAlert.findById(req.params.id).populate('seeker', 'name phone');
+		const sos = await Sosalert.findById(req.params.id).populate('seeker', 'name phone');
 		if(!sos) return res.status(404).json({
 			success: false,
 			message: 'SOS alert not found'
@@ -229,7 +229,7 @@ exports.respondToSos = async (req, res) => {
 
 exports.cancelSos = async (req, res) => {
 	try {
-		const sos = await SosAlert.findById(req.params.id);
+		const sos = await Sosalert.findById(req.params.id);
 		if(!sos) return res.status(404).json({
 			success: false,
 			message: 'SOS not found'
