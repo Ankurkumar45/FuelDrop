@@ -18,19 +18,30 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-const io = new Server(server, {
-	cors: {
-		origin: process.env.CLIENT_URL || 'http://localhost:5173',
-		methods: ['GET', 'POST'],
+const allowedOrigins = [
+	process.env.CLIENT_URL,
+	'http://localhost:5173',
+	'https://fuel-drop-three.vercel.app',
+].filter(Boolean);
+
+const corsOptions = {
+	origin: (origin, callback) => {
+		if (!origin || allowedOrigins.includes(origin)) {
+			return callback(null, true);
+		}
+		return callback(new Error(`CORS policy blocked access from origin ${origin}`), false);
 	},
+	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+	credentials: true,
+};
+
+const io = new Server(server, {
+	cors: corsOptions,
 });
 
 app.set('io', io);
 
-app.use(cors({
-	origin: process.env.CLIENT_URL || 'http://localhost:5173',
-	credentials: true,
-}));
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -60,7 +71,7 @@ app.use((req, res) => {
 
 //Global error handler
 app.use((err, req, res, next) => {
-	console.error('Undandled error: ', error);
+	console.error('Undandled error: ', err);
 	
 	// Mongoose duplicate key error
 	if(err.code === 11000) {
