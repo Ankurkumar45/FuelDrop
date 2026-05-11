@@ -62,6 +62,7 @@ app.get('/api/health', (req, res) => {
 		success: true,
 		message: 'FuelDrop API is running',
 		timestamp: new Date().toISOString(),
+		allowedOrigins,
 	});
 });
 
