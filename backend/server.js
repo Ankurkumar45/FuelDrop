@@ -19,20 +19,24 @@ const app = express();
 const server = http.createServer(app);
 
 const allowedOrigins = [
-	process.env.CLIENT_URL,
 	'http://localhost:5173',
-	'https://fuel-drop-three.vercel.app',
-].filter(Boolean);
+	'http://localhost:5174',
+	...(process.env.CLIENT_URL
+		? process.env.CLIENT_URL.split(',').map((o) => o.trim())
+		: []),
+];
 
 const corsOptions = {
 	origin: (origin, callback) => {
-		if (!origin || allowedOrigins.includes(origin)) {
-			return callback(null, true);
-		}
-		return callback(new Error(`CORS policy blocked access from origin ${origin}`), false);
+		// Allow requests with no origin (Postman, mobile apps, curl)
+		if (!origin) return callback(null, true);
+		if (allowedOrigins.includes(origin)) return callback(null, true);
+		console.warn(`CORS blocked: ${origin}`);
+		callback(new Error(`CORS blocked: ${origin} is not allowed`));
 	},
-	methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 	credentials: true,
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 const io = new Server(server, {
@@ -72,25 +76,25 @@ app.use((req, res) => {
 //Global error handler
 app.use((err, req, res, next) => {
 	console.error('Undandled error: ', err);
-	
+
 	// Mongoose duplicate key error
-	if(err.code === 11000) {
+	if (err.code === 11000) {
 		const field = Object.keys(err.keyValue)[0];
 		return res.status(400).json({
 			success: false,
 			message: `${field} already exists`
 		});
 	}
-	
+
 	// Mongoose validation error
-	if(err.name === 'ValidationError') {
+	if (err.name === 'ValidationError') {
 		const message = Object.values(err.errors).map((e) => e.message);
 		return res.status(400).json({
 			success: false,
 			message: message.join(', ')
 		});
 	}
-	
+
 	res.status(err.statusCode || 500).json({
 		success: false,
 		message: err.message || 'Internal server error'
@@ -100,12 +104,12 @@ app.use((err, req, res, next) => {
 //Socket.IO connection handler
 io.on('connection', (socket) => {
 	console.log(`Socket connected: ${socket.id}`);
-	
+
 	socket.on('join', (userId) => {
 		socket.join(userId);
 		console.log(`User ${userId} joined room`);
 	});
-	
+
 	socket.on('disconnect', () => {
 		console.log(`Socket disconnected: ${socket.id}`);
 	});
@@ -114,4 +118,5 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
 	console.log(`FuelDrop server running on port ${PORT} in ${process.env.NODE_ENV} mode`);
+	console.log(`✅ Allowed origins: ${allowedOrigins.join(', ')}`);
 });
