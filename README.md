@@ -90,5 +90,5 @@ Open `http://localhost:5173`
 
 - ✅ **Phase 1** — Auth system, MongoDB models, role-based routing
 - ✅ **Phase 2** — Map view, pump finder (Leaflet + geo queries)
-- 🔲 **Phase 3** — Order placement, delivery tracking
-- 🔲 **Phase 4** — SOS alerts, Socket.IO real-time, payments (Razorpay)
+- ✅ **Phase 3** — Order placement, delivery tracking
+- ✅ **Phase 4** — SOS alerts, Socket.IO real-time, payments (Razorpay)
