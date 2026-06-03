@@ -1,1 +1,0 @@
-MongoDB connection URL = mongodb+srv://ankurkumardwivedi779_db_user:jksSEK8kJdG8q3KA@cluster0.k7f4w98.mongodb.net/?appName=Cluster0
